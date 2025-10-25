@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Organizations</h2>
+<div id="org-list" class="list-group"></div>
+
+<hr>
+<h4>Add Organization</h4>
+<form id="org-form">
+    <input type="text" id="name" placeholder="Name" class="form-control mb-2" required>
+    <input type="text" id="address" placeholder="Address" class="form-control mb-2">
+    <button class="btn btn-primary">Add Organization</button>
+</form>
+
+<script>
+async function fetchOrganizations() {
+    const res = await fetch('/api/organizations');
+    const data = await res.json();
+    const orgList = document.getElementById('org-list');
+    orgList.innerHTML = '';
+    data.forEach(org => {
+        const item = document.createElement('div');
+        item.className = 'list-group-item';
+        item.innerText = `${org.name} - ${org.address}`;
+        orgList.appendChild(item);
+    });
+}
+document.getElementById('org-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const address = document.getElementById('address').value;
+    await fetch('/api/organizations', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name, address})
+    });
+    fetchOrganizations();
+    e.target.reset();
+});
+fetchOrganizations();
+</script>
+{% endblock %}

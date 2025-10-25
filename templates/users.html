@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Users</h2>
+
+<div id="user-list" class="list-group mb-3"></div>
+
+<hr>
+<h4>Add User</h4>
+<form id="user-form">
+    <input type="text" id="user-name" placeholder="Name" class="form-control mb-2" required>
+    <input type="email" id="user-email" placeholder="Email" class="form-control mb-2" required>
+
+    <select id="organization-id" class="form-select mb-2" required>
+        <option value="">Select Organization</option>
+    </select>
+
+    <button class="btn btn-primary">Add User</button>
+</form>
+
+<script>
+async function fetchOrganizations() {
+    const res = await fetch('/api/organizations');
+    const data = await res.json();
+    const orgSelect = document.getElementById('organization-id');
+    orgSelect.innerHTML = '<option value="">Select Organization</option>';
+    data.forEach(org => {
+        const option = document.createElement('option');
+        option.value = org.id;
+        option.text = org.name;
+        orgSelect.appendChild(option);
+    });
+}
+
+async function fetchUsers() {
+    const res = await fetch('/api/users');
+    const data = await res.json();
+    const userList = document.getElementById('user-list');
+    userList.innerHTML = '';
+    data.forEach(user => {
+        const item = document.createElement('div');
+        item.className = 'list-group-item';
+        item.innerText = `${user.name} (${user.email}) - Organization ID: ${user.organization_id}`;
+        userList.appendChild(item);
+    });
+}
+
+document.getElementById('user-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = document.getElementById('user-name').value;
+    const email = document.getElementById('user-email').value;
+    const organization_id = document.getElementById('organization-id').value;
+
+    if (!organization_id) return alert('Please select an organization');
+
+    await fetch('/api/users', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name, email, organization_id})
+    });
+    fetchUsers();
+    e.target.reset();
+});
+
+fetchOrganizations();
+fetchUsers();
+</script>
+{% endblock %}
